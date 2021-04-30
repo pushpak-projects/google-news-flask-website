@@ -1,0 +1,1246 @@
+<html>
+
+<head>
+    <style>
+        hr.new3 {
+            border-top: 1px dotted black;
+        }
+
+        table {
+            border-spacing: 8px 0;
+        }
+
+        table.a {
+            width: 800px;
+            margin-left: -20px;
+        }
+
+        .button-table {
+            margin-left: 320px;
+            margin-top: -3px;
+            position: fixed;
+
+        }
+
+        .card {
+            text-align: center;
+            background-color: #F0F0F0;
+            column-gap: 10px;
+            width: 155px;
+            border-radius: 7px;
+            column-gap: 10px;
+            overflow: hidden;
+            height: 400px;           
+            border-style: solid;
+            border-color: lightgray;
+            border-width: 0.8px;
+            font-family: "Times New Roman", Times, serif;
+        }
+
+        .column {
+            float: left;
+            margin-left: 0px;
+            width: 800px;
+        }
+
+        .imageincard {
+            height: 120px;
+            width: 170px;
+            border-radius: 5px;
+            border-image-width: 3px;
+        }
+
+        .first-row {
+            float: left;
+            padding: 0 50px;
+            margin-top: 20px;
+        }
+
+        .topheadline {
+            height: 170px;
+            width: 300px;
+            margin-left: 500px;
+        }
+
+        #my_dataviz {
+            margin-left: 900px;
+            margin-top: 20px;
+            background-color: lightgray;
+            color: black;
+        }
+
+        .home-buttons1 {
+            background-color: #585858;
+            color: white;
+            display: block;
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+            font-family: "Times New Roman", Times, serif;
+            font-size: 16;
+            border-width: 1px;
+            border-bottom-width: 0px;
+        }
+
+        .home-buttons2 {
+            background-color: #E8E8E8;
+            color: rgb(0, 0, 0);
+            display: block;
+            border-bottom-left-radius: 4px;
+            border-bottom-right-radius: 4px;
+            font-family: "Times New Roman", Times, serif;
+            font-size: 16;
+            font-weight: bold;
+            border-width: 1px;
+            border-top-width: 0px;
+        }
+
+        .home-buttons2:hover {
+            background-color: green;
+        }
+
+        /* Caption text */
+        .text {
+            color: #f2f2f2;
+            font-size: 15px;
+            padding: 8px 12px;
+            position: absolute;
+            bottom: 8px;
+            text-align: center;
+        }
+
+        .outer-div-new {
+
+            width: 600px;
+            text-align: center;
+            margin-top: 100px;
+            display: none;
+        }
+
+    </style>
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/holtzy/D3-graph-gallery@master/LIB/d3.layout.cloud.js"></script>
+</head>
+
+<body>
+    <table id="button-table" class="button-table">
+        <tr>
+            <td>
+
+                <button class="home-buttons1" id="googleNews" style="height: 40px; width: 125px;"
+                    onclick="displayfirstpage()">Google News</button>
+                <button class="home-buttons2" id="search" style="height: 40px; width: 125px;" onClick="removeNews();"
+                    onmouseover="this.style.color='white'; this.style.backgroundColor='green'"
+                    onmouseout="this.style.color='black'; this.style.backgroundColor='#E8E8E8'">Search</button>
+            </td>
+
+        </tr>
+
+    </table>
+    <div id="form-div" style="display: none;">
+        <form id="news-form" onsubmit="event.preventDefault(); displayCards()">
+            <br><label for="Keyword">Keyword</label><span style="color: red;">*</span>&nbsp;
+            <input type="text" id="keyword" name="keyword" required>&nbsp;
+            <label for="From">From</label><span style="color: red;">*</span>&nbsp;
+            <input type="date" id="fromdate" name="from" required>&nbsp;
+            <label for="To">To</label><span style="color: red;">*</span>&nbsp;
+            <input type="date" id="todate" name="to" required><br><br>
+            &nbsp;&nbsp;<label for="Category" style="width:100px">Category</label>&nbsp;
+            <select id="category" name="category" form="news-form" onchange="getSources()">
+                <option value="all" selected>all</option>
+                <option value="business">business</option>
+                <option value="entertainment">entertainment</option>
+                <option value="technology">technology</option>
+                <option value="sports">sports</option>
+                <option value="general">general</option>
+                <option value="science">science</option>
+            </select>
+            &nbsp;&nbsp;<label for="Source" style="width:100px">Source</label>&nbsp;
+            <select id="source" name="source" form="news-form">
+                <option value="all" selected id="sourceoption">all</option>
+            </select><br><br>
+            <button type="submit" id="SubmitButton" value="Submit"
+                style="background-color: #F0F0F0; border-style: none;height: 30px; width: 100px;"
+                onmouseover="this.style.backgroundColor='green'; this.style.color='white'"
+                onmouseout="this.style.backgroundColor='#F5F5F5'; this.style.color='black'">Search</button>&nbsp;&nbsp;&nbsp;&nbsp
+            <input type="button" id="clearButton" value="Clear" onclick="reset1()"
+                style="background-color: #F0F0F0;border-style: none;height: 30px; width: 100px;"
+                onmouseover="this.style.backgroundColor='green';this.style.color='white'"
+                onmouseout="this.style.backgroundColor='#F5F5F5';this.style.color='black'" />
+        </form>
+    </div>
+    <p id="no_result" style="font-family: 'Times New Roman', Times, serif; margin-top: 10px; margin-left: 850px;display: none;">No results</p>
+    <div id="carddisplay" style="display:none;">
+    </div>
+
+    <div id="outer-div"
+        style="width: 700px; text-align: center;margin-top: 100px;margin-left: 500px;margin-right :20px;">
+        <div id="slideshow-container"
+            style="height: 260px;width:380px; padding-right: 20px; border-color: black;margin-top: -50px; position: relative;">
+            <div style="height:auto;width:400px;bottom:0;background-color:black; opacity:0.5;position: absolute;">
+                <h4 id="slideshow-title" style="font-size: 18px; color: white;font-weight: bolder;"></h4>
+                <p id="slideshow-description" style="font-size: 12px; color: white; text-align: center;"></p>
+            </div>
+        </div>
+
+        <div id="my_dataviz"
+            style="height: 260px;width:280px;margin-top: -260px; background-color: #F5F5F5; margin-left: 420px;"></div>
+
+        <div style="width:700px;margin-top:30px;margin-bottom: 10px;">
+            <p style="text-align: center; margin: auto; font-size:20"><b>CNN</b></p>
+            <hr class="new3" style="width:705px">
+        </div>
+
+        <div style="margin-bottom: 10px;">
+            <table class="a">
+                <tr class="column">
+                    <td class="card" style="vertical-align: baseline; margin-right: 10px;">
+
+                        <div id="cnncard1" style="padding:0px;">
+                            <img id="cnni1" class="imageincard" style="padding:0px;">
+                            <p id="cnnp1"></p>
+                            <p id="cnnp1_1"></p>
+                        </div>
+
+                    </td>
+                    <td class="card" style="vertical-align: baseline;">
+                        <div id="cnncard2" style="padding:0px;">
+                            <img id="cnni2" class="imageincard" style="padding:0px;">
+                            <p id="cnnp2"></p>
+                            <p id="cnnp2_2"></p>
+                        </div>
+                    </td>
+                    <td class="card" style="vertical-align: baseline;">
+                        <div id="cnncard3" style="padding:0px;">
+                            <img id="cnni3" class="imageincard" style="padding:0px;">
+                            <p id="cnnp3"></p>
+                            <p id="cnnp3_3"></p>
+                        </div>
+                    </td>
+                    <td class="card" style="vertical-align: baseline;">
+                        <div id="cnncard4" style="padding:0px;">
+                            <img id="cnni4" class="imageincard" style="padding:0px;">
+                            <p id="cnnp4"></p>
+                            <p id="cnnp4_4"></p>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+
+        <div style="width:700px;margin-top:30px;margin-bottom: 10px;">
+            <p style="text-align: center; margin: auto;  font-size:20"><b>Fox News</b></p>
+            <hr class="new3" style="width:705px">
+        </div>
+
+        <div>
+            <table class="a">
+                <tr class="column">
+                    <td class="card" style="vertical-align: baseline;">
+                        <div id="foxcard1" style="padding:0px; vertical-align: baseline;">
+                            <img id="foxi1" class="imageincard" style="padding:0px;">
+                            <p id="foxp1"></p>
+                            <p id="foxp1_1"></p>
+                        </div>
+                    </td>
+                    <td class="card" style="vertical-align: baseline;">
+                        <div id="foxcard2" style="padding:0px;  vertical-align: baseline;">
+                            <img id="foxi2" class="imageincard" style="padding:0px;">
+                            <p id="foxp2"></p>
+                            <p id="foxp2_2"></p>
+                        </div>
+                    </td>
+                    <td class="card" style="vertical-align: baseline;">
+                        <div id="foxcard3" style="padding:0px;  vertical-align: baseline;">
+                            <img id="foxi3" class="imageincard" style="padding:0px;">
+                            <p id="foxp3"></p>
+                            <p id="foxp3_3"></p>
+                        </div>
+                    </td>
+                    <td class="card" style="vertical-align: baseline;">
+                        <div id="foxcard4" style="padding:0px; vertical-align: baseline;">
+                            <img id="foxi4" class="imageincard" style="padding:0px;">
+                            <p id="foxp4"></p>
+                            <p id="foxp4_4"></p>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+    </div>
+
+    <script language="javascript">
+
+
+        xmlslideshow = new XMLHttpRequest();
+        xmlslideshow.open("GET", "/v1.0/top-headlines/slide", true);
+        try {
+            xmlslideshow.send();
+        }
+        catch (err) {
+            console.log(err);
+        }
+
+        if (xmlslideshow.status == "404") { // File does not exist case
+            console.log("error code: ", 404);
+        }
+        else { 
+            xmlslideshow.onload = function () {
+                if (xmlslideshow.readyState === xmlslideshow.DONE) {
+                    if (xmlslideshow.status === 200) {
+                        slideJson = JSON.parse(xmlslideshow.responseText);
+                        console.log("slidejson: " + slideJson);
+                        if (slideJson.hasOwnProperty("message")) {
+                            alert(slideJson.message);
+                            return;
+                        }
+                        slideArr = slideJson;
+                        function slideShow(i) {
+                            slide = slideArr[i];
+                            document.getElementById("slideshow-container").style.backgroundSize = "400px 260px";
+                            document.getElementById("slideshow-container").style.backgroundImage = "url(" + "\'" + slide.urlToImage + "\')";
+                            document.getElementById("slideshow-title").innerHTML = slide.title;
+                            document.getElementById("slideshow-description").innerHTML = slide.description;
+                            document.getElementById("slideshow-container").onclick = function () {
+                                window.open(slide.url);
+                            }
+                            console.log("i:" + i);
+                            i++;
+                            if (i == 5) {
+                                i = 0;
+                            }
+                            setTimeout(function () { slideShow(i); }, 4000);
+                        }
+                        slideShow(0);
+                    }
+                }
+            }
+
+        }
+
+        xmlhttp1 = new XMLHttpRequest();
+        xmlhttp1.open("GET", "/v1.0/top-headlines/fox", true);
+        try {
+            xmlhttp1.send();
+        }
+        catch (err) {
+            console.log(err);
+        }
+
+        if (xmlhttp1.status == "404") { // File does not exist case
+            console.log("error code: ", 404);
+        }
+        else { 
+            xmlhttp1.onload = function () {
+                if (xmlhttp1.readyState === xmlhttp1.DONE) {
+                    if (xmlhttp1.status === 200) {
+                        jsonObj1 = JSON.parse(xmlhttp1.responseText);
+                        if (jsonObj1.hasOwnProperty("message")) {
+                            alert(jsonObj1.message);
+                            return;
+                        }
+                        var cardArr1 = jsonObj1;
+                        for (k = 0; k < cardArr1.length; k++) {
+                            card1 = cardArr1[k];
+                            l = k + 1;
+                            document.getElementById("foxi" + l.toString()).src = card1.urlToImage;
+                            document.getElementById("foxp" + l.toString()).innerHTML = "<b>" + card1.title + "</b>";
+                            document.getElementById("foxp" + l.toString()).style.fontFamily = "Times New Roman, Times, serif";
+                            document.getElementById("foxp" + l.toString() + "_" + l.toString()).innerHTML = card1.description;
+                            document.getElementById("foxp" + l.toString() + "_" + l.toString()).style.paddingBottom = "10px";
+                            document.getElementById("foxp" + l.toString() + "_" + l.toString()).style.fontSize = "13px";
+                            document.getElementById("foxp" + l.toString() + "_" + l.toString()).style.fontFamily = "Times New Roman, Times, serif";
+                            document.getElementById("foxcard" + l.toString()).onclick = (function (card1) {
+                                return function () {
+                                    window.open(card1.url);
+                                }
+                            })(card1);
+                        }
+                    }
+                }
+            }
+        }
+
+
+
+        xmlhttp = new XMLHttpRequest();
+        xmlhttp.open("GET", "/v1.0/top-headlines/cnn", true);
+        try {
+            xmlhttp.send();
+        }
+        catch (err) {
+            console.log(err);
+        }
+
+        if (xmlhttp.status == "404") { // File does not exist case
+            console.log("error code: ", 404);
+        }
+        else { 
+            xmlhttp.onload = function () {
+                if (xmlhttp.readyState === xmlhttp.DONE) {
+                    if (xmlhttp.status === 200) {
+                        jsonObj = JSON.parse(xmlhttp.responseText);
+                        if (jsonObj.hasOwnProperty("message")) {
+                            alert(jsonObj.message);
+                            return;
+                        }
+                        var cardArr = jsonObj;
+                        for (i = 0; i < cardArr.length; i++) {
+                            card = cardArr[i];
+                            j = i + 1;
+                            document.getElementById("cnni" + j.toString()).src = card.urlToImage;
+                            document.getElementById("cnni" + j.toString()).style.padding="0px";
+                            document.getElementById("cnnp" + j.toString()).innerHTML = "<b>" + card.title + "</b>";
+                            document.getElementById("cnnp" + j.toString()).style.fontFamily = "Times New Roman, Times, serif";
+                            document.getElementById("cnnp" + j.toString() + "_" + j.toString()).innerHTML = card.description;
+                            document.getElementById("cnnp" + j.toString() + "_" + j.toString()).style.paddingBottom = "10px";
+                            document.getElementById("cnnp" + j.toString() + "_" + j.toString()).style.fontSize = "13px";
+                            document.getElementById("cnnp" + j.toString() + "_" + j.toString()).style.fontFamily = "Times New Roman, Times, serif";
+                            document.getElementById("cnncard" + j.toString()).onclick = (function (card) {
+                                return function () {
+                                    window.open(card.url);
+                                }
+                            })(card);
+                        }
+                    }
+                }
+            }
+        }
+
+        xmlhttp2 = new XMLHttpRequest();
+        xmlhttp2.open("GET", "/v1.0/top-headlines/wordcount", true);
+        try {
+            xmlhttp2.send();
+        }
+        catch (err) {
+            console.log(err);
+        }
+
+        if (xmlhttp2.status == "404") { // File does not exist case
+            console.log("error code: ", 404);
+        }
+        else {
+            xmlhttp2.onload = function () {
+                if (xmlhttp2.readyState === xmlhttp2.DONE) {
+                    if (xmlhttp2.status === 200) {
+                        jsonObj2 = JSON.parse(xmlhttp2.responseText);
+                        if (jsonObj2.hasOwnProperty("message")) {
+                            alert(jsonObj2.message);
+                            return;
+                        }
+                        var myWords = jsonObj2;
+
+                        // set the dimensions and margins of the graph
+                        var margin = { top: 10, right: 10, bottom: 10, left: 10 },
+                            width = 450 - margin.left - margin.right,
+                            height = 450 - margin.top - margin.bottom;
+                        document.getElementById("my_dataviz").style.marginLeft = "420px";
+
+                        // append the svg object to the body of the page
+                        var svg = d3.select("#my_dataviz").append("svg")
+                            .attr("width", width + margin.left + margin.right)
+                            .attr("height", height + margin.top + margin.bottom)
+                            .append("g")
+                            .attr("transform",
+                                "translate(" + margin.left + "," + margin.top + ")");
+
+                        // Constructs a new cloud layout instance. It run an algorithm to find the position of words that suits your requirements
+                        // Wordcloud features that are different from one word to the other must be here
+                        var layout = d3.layout.cloud()
+                            .size([250, 250])
+                            .words(myWords.map(function (d) { return { text: d.word, size: d.size * 8 }; }))
+                            .padding(10)//space between words
+                            .rotate(function () { return ~~(Math.random() * 2) * 90; })
+                            .fontSize(function (d) { return d.size; })      // font size of words
+                            .on("end", draw);
+                        layout.start();
+
+                        // This function takes the output of 'layout' above and draw the words
+                        // Wordcloud features that are THE SAME from one word to the other can be here
+                        function draw(words) {
+                            svg
+                                .attr("width", layout.size()[0])
+                                .attr("height", layout.size()[1])
+                                .append("g")
+                                .attr("transform", "translate(" + layout.size()[0] / 2 + "," + layout.size()[1] / 2 + ")")
+                                .selectAll("text")
+                                .data(words)
+                                .enter().append("text")
+                                .style("font-size", function (d) { return (d.size + 2) + "px"; })
+                                .style("fill", "black")
+                                .attr("text-anchor", "middle")
+                                .style("font-family", "Impact")
+                                .attr("transform", function (d) {
+                                    return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                                })
+                                .text(function (d) { return d.text; });
+                        }
+                    }
+                }
+            }
+        }
+
+        function displayfirstpage() {
+            document.getElementById("form-div").style.display = "none";
+            document.getElementById("carddisplay").style.display = "none";
+            document.getElementById("outer-div").style.display = "block";
+
+            var googleNews = document.getElementById('googleNews');
+            googleNews.style.color = "white";
+            googleNews.style.backgroundColor = "#585858";
+            googleNews.style.fontWeight = "normal";
+
+            var search = document.getElementById('search');
+            search.style.color = "black";
+            search.style.backgroundColor = "#E8E8E8";
+
+            googleNews.removeEventListener("mouseout", lightGoogleNewsButton);
+            googleNews.addEventListener("mouseout", darkGoogleNewsButton);
+            googleNews.addEventListener("mouseover", greenGoogleNewsButton);
+
+            search.addEventListener("mouseout", lightSearchButton);
+            search.addEventListener("mouseover", greenSearchButton);
+        }
+
+        function removeNews() {
+            var element = document.getElementById("outer-div");
+            element.style.display = "none";
+            var newDiv = document.getElementById("form-div");
+            newDiv.style.width = 660 + "px";
+            newDiv.style.height = 150 + "px";
+            newDiv.style.textAlign = "center";
+            newDiv.style.marginTop = 50 + "px";
+            newDiv.style.marginLeft = 550 + "px";
+            newDiv.style.backgroundColor = "#F5F5F5";
+            
+            var date = new Date();
+            var day = date.getDate();
+            var month = date.getMonth() + 1;
+            var year = date.getFullYear();
+            var today = month + "/" + day + "/" + year;
+            newDiv.getElementsByTagName("input")[2].valueAsDate = new Date(today);
+
+            var todate = new Date(newDiv.getElementsByTagName("input")[2].valueAsDate);
+            var milsec = todate.getTime();
+            console.log(milsec);
+            milsec = date - 604800000;
+            
+            var fromdate = new Date(milsec);
+            console.log(fromdate);
+            newDiv.getElementsByTagName("input")[1].valueAsDate = new Date(milsec);
+            getSources();
+            newDiv.getElementsByTagName("select")[0].style.width = "180px";
+            newDiv.getElementsByTagName("select")[1].style.width = "180px";
+            newDiv.style.display = "block";
+
+            var googleNews = document.getElementById('googleNews');
+            googleNews.style.color = "black";
+            googleNews.style.backgroundColor = "#E8E8E8";
+            googleNews.style.fontWeight = "bold";
+
+            var search = document.getElementById('search');
+            search.style.color = "white";
+            search.style.backgroundColor = "#585858";
+
+            search.removeEventListener("mouseout", lightSearchButton);
+            search.addEventListener("mouseout", darkSearchButton);
+            search.addEventListener("mouseover", greenSearchButton);
+
+            googleNews.addEventListener("mouseout", lightGoogleNewsButton);
+            googleNews.addEventListener("mouseover", greenGoogleNewsButton);
+
+        }
+
+        function lightGoogleNewsButton() {
+            this.style.backgroundColor = "#E8E8E8";
+            this.style.color = "black";
+            this.style.fontFamily = "Times New Roman, Times, serif";
+            this.style.fontWeight = "bold";
+
+        }
+        function darkGoogleNewsButton() {
+            this.style.backgroundColor = "#585858";
+            this.style.color = "white";
+            this.style.fontFamily = "Times New Roman, Times, serif";
+        }
+
+        function greenGoogleNewsButton() {
+            this.style.backgroundColor = "green";
+            this.style.color = "white";
+            this.style.fontFamily = "Times New Roman, Times, serif";
+        }
+        function darkSearchButton() {
+            this.style.backgroundColor = "#585858";
+            this.style.color = "white";
+            this.style.fontFamily = "Times New Roman, Times, serif";
+        }
+        function greenSearchButton() {
+            this.style.backgroundColor = "green";
+            this.style.color = "white";
+            this.style.fontFamily = "Times New Roman, Times, serif";
+        }
+
+        function lightSearchButton() {
+            this.style.backgroundColor = "#E8E8E8";
+            this.style.color = "black";
+            this.style.fontFamily = "Times New Roman, Times, serif";
+            this.style.fontWeight = "bold";
+        }
+
+
+        function getSources() {
+
+            value = document.getElementById("category").value;
+            console.log("in get sources");
+            xmlhttp = new XMLHttpRequest();
+            console.log("/v1.0/sources?category=" + value);
+            xmlhttp.open("GET", "/v1.0/sources?category=" + value, true);
+            try {
+                xmlhttp.send();
+            }
+            catch (err) {
+                console.log(err);
+            }
+
+            if (xmlhttp.status == "404") { // File does not exist case
+                console.log("error code: ", 404);
+            }
+            else { 
+                xmlhttp.onload = function () {
+                    if (xmlhttp.readyState === xmlhttp.DONE) {
+                        if (xmlhttp.status === 200) {
+
+                            srcList = JSON.parse(xmlhttp.responseText);
+                            if (srcList.hasOwnProperty("message")) {
+                                alert(srcList.message);
+                                return;
+                            }
+                            console.log(srcList)
+
+                            x = document.getElementById("source");
+                            x.options.length = 0;
+                            p = document.createTextNode("all");
+                            z = document.createElement("option");
+                            z.appendChild(p);
+                            x.appendChild(z);
+
+                            for (i = 0; i < srcList.length; i++) {
+                                z = document.createElement("option");
+                                p = document.createTextNode(srcList[i].id);
+                                z.appendChild(p);
+                                x.appendChild(z);
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+
+        function showMoreCards(cardJson) {
+            console.log("inside showMoreCards");
+            carddisplay = document.getElementById("carddisplay");
+            extracarddiv = document.createElement("div");
+            extracarddiv.setAttribute("id", "extracarddiv");
+            for (k = 5; k < cardJson.length; k++) {
+                console.log("card no:" + k)
+                carddiv2 = document.createElement("DIV");
+                carddiv2.setAttribute("id", "carddiv" + k.toString());
+                carddiv2.style.borderStyle = "solid";
+                carddiv2.style.borderColor="#D8D8D8";
+                carddiv2.style.borderWidth="2px";
+                carddiv2.style.display = "flex";
+                carddiv2.addEventListener("mouseover", cardMouseOver);
+                carddiv2.addEventListener("mouseout", cardMouseOut);
+                carddiv2.style.marginBottom = "10px";
+                carddiv2.style.marginLeft = "567px";
+                carddiv2.style.backgroundColor = "#E8E8E8";
+                carddiv2.style.width = "620px";
+                carddiv2.style.borderRadius = "5px";
+                imgdiv = document.createElement("DIV");
+                imgdiv.style.float = "left";
+                image = document.createElement("img");
+
+                image.src = cardJson[k].urlToImage;
+                image.setAttribute("width", 80);
+                image.setAttribute("height", 80);
+                image.style.padding = "10px";
+                imgdiv.appendChild(image);
+                
+                carddiv2.appendChild(imgdiv);
+
+                var textdiv1 = document.createElement("DIV");
+                textdiv1.setAttribute("id", "textdiv1");
+                x = document.createElement("h4");
+                t = document.createTextNode(cardJson[k].title);
+                x.appendChild(t);
+                textdiv1.appendChild(x);
+
+                y = document.createElement("p");
+                y.style.marginTop = "-12px";
+                y.style.fontSize = "14px";
+                var desc = cardJson[k].description.substring(0, 75);
+                if (desc.length <= desc.lastIndexOf(" "))
+                    desc = desc.substring(0, desc.length);
+                else
+                    desc = desc.substring(0, desc.lastIndexOf(" "));
+
+                desc = desc + "...";
+                z = document.createTextNode(desc);
+                y.appendChild(z);
+                textdiv1.style.marginBottom = "10px";
+                textdiv1.style.marginTop = "-12px";
+                textdiv1.appendChild(y);
+                carddiv2.appendChild(textdiv1);
+                extracarddiv.appendChild(carddiv2);
+
+                var textdiv2 = document.createElement("Div");
+                textdiv2.style.marginBottom = "10px";
+                var mainDiv = document.createElement("div");
+                mainDiv.style.width="505px";
+                textdiv2.style.display = "none";
+                textdiv2.setAttribute("id", "textdiv2");
+                textdiv2.style.marginTop = "-12px";
+
+                x = document.createElement("h4");
+                t = document.createTextNode(cardJson[k].title);
+                x.appendChild(t);
+                mainDiv.appendChild(x);
+
+                authordiv = document.createElement("P");
+                authordiv.style.marginTop = "-18px";
+                authordiv.style.fontSize = "14px";
+                
+                console.log(cardJson[k].author);
+                authordiv.innerHTML = "<b>Author: </b>" + cardJson[k].author;
+                
+                mainDiv.appendChild(authordiv);
+                console.log(textdiv2);
+                
+                sourcediv = document.createElement("P");
+                sourcediv.style.marginTop = "-12px";
+                sourcediv.style.fontSize = "14px";
+              
+                console.log(cardJson[k].source.name);
+                sourcediv.innerHTML = "<b>Source: </b>" + cardJson[k].source.name;
+                
+                mainDiv.appendChild(sourcediv);
+                console.log(textdiv2);
+                
+                date = new Date(cardJson[k].publishedAt);
+                year = date.getFullYear();
+                month = date.getMonth() + 1;
+                dt = date.getDate();
+
+                if (dt < 10) {
+                    dt = '0' + dt;
+                }
+                if (month < 10) {
+                    month = '0' + month;
+                }
+
+                console.log(month + "/" + dt + "/" + year);
+                datediv = document.createElement("P");
+                datediv.style.marginTop = "-12px";
+                datediv.style.fontSize = "14px";
+                
+                datediv.innerHTML = "<b>Date: </b>" + month + "/" + dt + "/" + year;
+                mainDiv.appendChild(datediv);
+                
+                var desc = cardJson[k].description;
+                descdiv = document.createElement("P");
+                descdiv.style.marginTop = "-12px";
+                descdiv.style.fontSize = "14px";
+                descdiv.style.marginBottom = "5px";
+                
+                desctext = document.createTextNode(desc);
+                descdiv.appendChild(desctext);
+                mainDiv.appendChild(descdiv);
+
+
+                linkdiv = document.createElement("A");
+                linkdiv.style.marginBottom = "10px";
+                linkdiv.style.fontSize = "14px";
+                
+                linktext = document.createTextNode("See Original Post");
+                linkdiv.setAttribute("href", cardJson[k].url);
+                linkdiv.appendChild(linktext);
+                linkdiv.setAttribute("target", "_blank");
+                mainDiv.appendChild(linkdiv);
+
+                crossdiv = document.createElement("div");
+                crossp = document.createElement("p");
+                crossp.style.fontSize = "27px";
+                crossp.style.marginTop = "12px";
+                crossp.style.marginRight = "3px";
+                crossp.innerHTML = "&times;";
+                crossdiv.appendChild(crossp);
+                carddiv2.addEventListener("click", expandCard1);
+
+                textdiv2.appendChild(mainDiv);
+                textdiv2.appendChild(crossdiv);
+                console.log(textdiv2);
+                carddiv2.appendChild(textdiv2);
+
+                extracarddiv.appendChild(carddiv2);
+            }// end for loop
+            carddisplay.appendChild(extracarddiv);
+            showlessbutton = document.createElement("BUTTON");
+            content = document.createTextNode("Show Less");
+            showlessbutton.appendChild(content);
+            showlessbutton.style.marginLeft = "837px";
+            showlessbutton.style.backgroundColor = "#E8E8E8";
+            showlessbutton.style.border = "none";
+            showlessbutton.addEventListener("mouseover", showbuttonMouseOver);
+            showlessbutton.addEventListener("mouseout", showbuttonMouseOut);
+            showlessbutton.onclick = function () {
+                this.parentElement.style.display = "none";
+                this.parentElement.parentElement.getElementsByTagName("div")[0].style.display = "block";
+                showmorebutton = document.createElement("BUTTON");
+                content = document.createTextNode("Show More");
+                showmorebutton.appendChild(content);
+                showmorebutton.style.marginLeft = "837px";
+                showmorebutton.style.backgroundColor = "#E8E8E8";
+                showmorebutton.style.border = "none";
+                showmorebutton.addEventListener("mouseover", showbuttonMouseOver);
+                showmorebutton.addEventListener("mouseout", showbuttonMouseOut);
+                document.getElementById("initialcarddisplay").appendChild(showmorebutton);
+                showmorebutton.onclick = function () {
+                    this.parentElement.removeChild(this);
+                    showMoreCards(cardJson);
+                }
+                extracarddiv.appendChild(showlessbutton);
+                carddisplay.appendChild(extracarddiv);
+            }
+            extracarddiv.appendChild(showlessbutton);
+            carddisplay.appendChild(extracarddiv);
+        }
+
+        function expandCard1() {
+            console.log(this.children[2]);
+            this.children[2].style.display = "flex";
+            this.children[1].style.display = "none";
+            var button = this.children[2].children[1];
+            button.addEventListener("click", function (event) {
+                event.stopPropagation();
+                event.preventDefault();
+                textdiv2 = this.parentNode;
+                parent = textdiv2.parentNode;
+                parent.children[1].style.display = "block";
+                parent.children[2].style.display = "none";
+            })
+
+        }
+
+        function displayCards() {
+
+            console.log("inside display cards");
+            carddisplay = document.getElementById("carddisplay");
+            carddisplay.innerHTML = "";
+            initialcarddisplay = document.createElement("div");
+            initialcarddisplay.setAttribute("id", "initialcarddisplay");
+            carddisplay.style.display = "block";
+            carddisplay.style.marginTop = "50px";
+            key = document.getElementById("keyword").value;
+            from_date = document.getElementById("fromdate").value;
+            to_date = document.getElementById("todate").value;
+            console.log("from date:" + from_date);
+
+            if (from_date > to_date) {
+                alert("Incorrect time");
+                return;
+            }
+
+            selcategory = document.getElementById("category");
+            category = selcategory.options[selcategory.selectedIndex].value;
+            selsrc = document.getElementById("source");
+            source = selsrc.options[selsrc.selectedIndex].value;
+
+            xmlhttp = new XMLHttpRequest();
+            console.log("/v1.0/cards?q=" + key + "&from_date=" + from_date + "&to_date=" + to_date + "&category=" + category
+                + "&source=" + source);
+            xmlhttp.open("GET", "/v1.0/cards?q=" + key + "&from_date=" + from_date + "&to_date=" + to_date + "&category=" + category
+                + "&source=" + source, true);
+            try {
+                xmlhttp.send();
+            }
+            catch (err) {
+                console.log(err);
+            }
+
+            if (xmlhttp.status == "404") { // File does not exist case
+                console.log("error code: ", 404);
+            }
+            else {
+                xmlhttp.onload = function () {
+                    if (xmlhttp.readyState === xmlhttp.DONE) {
+                        if (xmlhttp.status === 200) {
+                            cardJson = JSON.parse(xmlhttp.responseText);
+                            console.log("cardjson: " + cardJson);
+                            if (cardJson.hasOwnProperty("message")) {
+                                alert(cardJson.message);
+                                return;
+                            }
+                            if (cardJson.length == 0) {
+                                console.log("empty response");
+                                if(document.getElementById("no_result").style.display=="none")
+                                    document.getElementById("no_result").style.display="block";
+                                return;
+                            }
+                            if (cardJson.length > 5) {
+                                console.log("no. of cards is more than 5");
+                                if (document.getElementById("no_result") != null)
+                                    document.getElementById("no_result").style.display = "none";
+                                for (i = 0; i < 5; i++) {
+                                    console.log("card no:" + (i + 1));
+                                    carddiv1 = document.createElement("DIV");
+                                    carddiv1.setAttribute("id", "carddiv" + (i + 1).toString());
+                                    carddiv1.style.display = "flex";
+                                    carddiv1.style.borderStyle = "solid";
+                                    carddiv1.style.borderColor="#D8D8D8";
+                                    carddiv1.style.borderWidth="2px";
+                                    
+                                    carddiv1.style.marginBottom = "10px";
+                                    carddiv1.style.marginLeft = "567px";
+                                    carddiv1.style.backgroundColor = "#E8E8E8";
+                                    carddiv1.style.width = "620px";
+                                    carddiv1.style.borderRadius = "5px";
+                                    carddiv1.addEventListener("mouseover", cardMouseOver);
+                                    carddiv1.addEventListener("mouseout", cardMouseOut);
+
+                                    imgdiv = document.createElement("DIV");
+                                    imgdiv.style.float = "left";
+                                    image = document.createElement("img");
+                                    image.src = cardJson[i].urlToImage;
+                                    image.setAttribute("width", 80);
+                                    image.setAttribute("height", 80);
+                                    image.style.padding = "10px";
+                                    imgdiv.appendChild(image);
+                                    carddiv1.appendChild(imgdiv);
+
+                                    textdiv1 = document.createElement("DIV");
+                                    textdiv1.setAttribute("id", "textdiv1");
+                                    textdiv1.style.marginTop = "-12px";
+                                    x = document.createElement("h4");
+                                    t = document.createTextNode(cardJson[i].title);
+                                    x.appendChild(t);
+                                    textdiv1.appendChild(x);
+
+                                    y = document.createElement("p");
+                                    y.style.marginTop = "-12px";
+                                    y.style.fontSize = "14px";
+                                    var desc = cardJson[i].description.substring(0, 75);
+                                    if (desc.length <= desc.lastIndexOf(" "))
+                                        desc = desc.substring(0, desc.length);
+                                    else
+                                        desc = desc.substring(0, desc.lastIndexOf(" "));
+
+                                    desc = desc + "...";
+                                    z = document.createTextNode(desc);
+                                    y.appendChild(z);
+                                    textdiv1.appendChild(y);
+                                    carddiv1.appendChild(textdiv1);
+
+                                    var textdiv2 = document.createElement("Div");
+                                    var mainDiv = document.createElement("div");
+                                    mainDiv.style.width="505px";
+                                    textdiv2.style.display = "none";
+                                    textdiv2.setAttribute("id", "textdiv2");
+                                    textdiv2.style.marginTop = "-12px";
+                                    textdiv2.style.marginBottom = "10px";
+                                    x = document.createElement("h4");
+                                    t = document.createTextNode(cardJson[i].title);
+                                    x.appendChild(t);
+                                    mainDiv.appendChild(x);
+
+
+                                    authordiv = document.createElement("P");
+                                    authordiv.style.fontSize = "14px";
+                                    authordiv.style.marginTop = "-18px";
+                                    
+                                    console.log(cardJson[i].author);
+                                    authordiv.innerHTML = "<b>Author: </b>" + cardJson[i].author;
+                                    
+                                    mainDiv.appendChild(authordiv);
+                                    console.log(textdiv2);
+                                    
+                                    sourcediv = document.createElement("P");
+                                    sourcediv.style.marginTop = "-12px";
+                                    sourcediv.style.fontSize = "14px";
+                                    console.log(cardJson[i].source.name);
+                                    sourcediv.innerHTML = "<b>Source: </b>" + cardJson[i].source.name;
+                                    mainDiv.appendChild(sourcediv);
+                                    console.log(textdiv2);
+        
+                                    date = new Date(cardJson[i].publishedAt);
+                                    year = date.getFullYear();
+                                    month = date.getMonth() + 1;
+                                    dt = date.getDate();
+
+                                    if (dt < 10) {
+                                        dt = '0' + dt;
+                                    }
+                                    if (month < 10) {
+                                        month = '0' + month;
+                                    }
+
+                                    console.log(month + "/" + dt + "/" + year);
+                                    datediv = document.createElement("P");
+                                    datediv.style.fontSize = "14px";
+                                    datediv.style.marginTop = "-12px";
+                                    datediv.innerHTML = "<b>Date: </b>" + month + "/" + dt + "/" + year;
+                                    mainDiv.appendChild(datediv);
+                                    
+                                    var desc = cardJson[i].description;
+                                    descdiv = document.createElement("P");
+                                    descdiv.style.fontSize = "14px";
+                                    descdiv.style.marginTop = "-12px";
+                                    descdiv.style.marginBottom = "5px";
+                                    desctext = document.createTextNode(desc);
+                                    descdiv.appendChild(desctext);
+                                    mainDiv.appendChild(descdiv);
+
+                                    linkdiv = document.createElement("A");
+                                    linkdiv.style.marginBottom = "10px";
+                                    linkdiv.style.fontSize = "14px";
+                                    linktext = document.createTextNode("See Original Post");
+                                    linkdiv.setAttribute("href", cardJson[i].url);
+                                    linkdiv.appendChild(linktext);
+                                    linkdiv.setAttribute("target", "_blank");
+                                    mainDiv.appendChild(linkdiv);
+
+                                    crossdiv = document.createElement("div");
+                                    crossp = document.createElement("p");
+                                    crossp.style.fontSize = "27px";
+                                    crossp.style.marginTop = "12px";
+                                    crossp.style.marginRight = "3px";
+                                    crossp.innerHTML = "&times;";
+                                    crossdiv.appendChild(crossp);
+                                    carddiv1.addEventListener("click", expandCard1);
+
+                                    textdiv2.appendChild(mainDiv);
+                                    textdiv2.appendChild(crossdiv);
+                                    console.log(textdiv2);
+                                    carddiv1.appendChild(textdiv2);
+                                    initialcarddisplay.appendChild(carddiv1);
+                                }
+                                carddisplay.appendChild(initialcarddisplay);
+                                showmorebutton = document.createElement("BUTTON");
+                                content = document.createTextNode("Show More");
+                                showmorebutton.appendChild(content);
+                                showmorebutton.style.marginLeft = "837px";
+
+                                showmorebutton.style.backgroundColor = "#E8E8E8";
+                                showmorebutton.style.border = "none";
+                                showmorebutton.addEventListener("mouseover", showbuttonMouseOver);
+                                showmorebutton.addEventListener("mouseout", showbuttonMouseOut);
+                                showmorebutton.onclick = function () {
+                                    this.parentElement.removeChild(this);
+                                    showMoreCards(cardJson);
+                                }
+                                initialcarddisplay.appendChild(showmorebutton);
+                                carddisplay.appendChild(initialcarddisplay);
+                            }
+
+                            else //if no of cards are less than or equal to 5 then show more button does not appear
+                            {
+                                console.log("no. of cards is less than 5");
+                                if (document.getElementById("no_result") != null)
+                                    document.getElementById("no_result").style.display = "none";
+                                for (i = 0; i < cardJson.length; i++) {
+                                    console.log("card no:" + (i + 1))
+                                    carddiv1 = document.createElement("DIV");
+                                    carddiv1.setAttribute("id", "carddiv" + (i + 1).toString());
+                                    carddiv1.style.display = "flex";
+                                    carddiv1.style.borderStyle = "solid";
+                                    carddiv1.style.borderColor="#D8D8D8";
+                                    carddiv1.style.borderWidth="2px";
+                                    carddiv1.style.marginBottom = "10px";
+                                    carddiv1.style.marginLeft = "567px";
+                                    carddiv1.style.backgroundColor = "lightgray";
+                                    carddiv1.style.width = "620px";
+                                    carddiv1.style.borderRadius = "5px";
+                                    carddiv1.addEventListener("mouseover", cardMouseOver);
+                                    carddiv1.addEventListener("mouseout", cardMouseOut);
+
+                                    imgdiv = document.createElement("DIV");
+                                    imgdiv.style.float = "left";
+                                    image = document.createElement("img");
+
+                                    image.src = cardJson[i].urlToImage;
+                                    image.setAttribute("width", 80);
+                                    image.setAttribute("height", 80);
+                                    image.style.padding = "10px";
+                                    imgdiv.appendChild(image);
+                                    carddiv1.appendChild(imgdiv);
+
+                                    textdiv1 = document.createElement("DIV");
+                                    textdiv1.setAttribute("id", "textdiv1");
+                                    textdiv1.style.marginTop = "-12px";
+                                    x = document.createElement("h4");
+                                    t = document.createTextNode(cardJson[i].title);
+                                    x.appendChild(t);
+                                    textdiv1.appendChild(x);
+
+                                    y = document.createElement("p");
+                                    y.style.marginTop = "-12px";
+                                    y.style.fontSize = "14px";
+                                    var desc = cardJson[i].description.substring(0, 75);
+                                    if (desc.length <= desc.lastIndexOf(" "))
+                                        desc = desc.substring(0, desc.length);
+                                    else
+                                        desc = desc.substring(0, desc.lastIndexOf(" "));
+
+                                    desc = desc + "...";
+                                    z = document.createTextNode(desc);
+                                    y.appendChild(z);
+                                    textdiv1.appendChild(y);
+                                    carddiv1.appendChild(textdiv1);
+                                    var textdiv2 = document.createElement("Div");
+                                    var mainDiv = document.createElement("div");
+                                    mainDiv.style.width="505px";
+                                    textdiv2.style.display = "none";
+                                    textdiv2.setAttribute("id", "textdiv2");
+                                    textdiv2.style.marginTop = "-12px";
+                                    textdiv2.style.marginBottom = "10px";
+                                    x = document.createElement("h4");
+                                    t = document.createTextNode(cardJson[i].title);
+                                    x.appendChild(t);
+                                    mainDiv.appendChild(x);
+
+
+                                    authordiv = document.createElement("P");
+                                    authordiv.style.fontSize = "14px";
+                                    authordiv.style.marginTop = "-18px";
+                                    console.log(cardJson[i].author);
+                                    authordiv.innerHTML = "<b>Author: </b>" + cardJson[i].author;
+                                    mainDiv.appendChild(authordiv);
+                                    console.log(textdiv2);
+                                    
+                                    sourcediv = document.createElement("P");
+                                    sourcediv.style.marginTop = "-12px";
+                                    sourcediv.style.fontSize = "14px";
+                                    
+                                    console.log(cardJson[i].source.name);
+                                    sourcediv.innerHTML = "<b>Source: </b>" + cardJson[i].source.name;
+                                    
+                                    mainDiv.appendChild(sourcediv);
+                                    console.log(textdiv2);
+                                    
+                                    date = new Date(cardJson[i].publishedAt);
+                                    year = date.getFullYear();
+                                    month = date.getMonth() + 1;
+                                    dt = date.getDate();
+
+                                    if (dt < 10) {
+                                        dt = '0' + dt;
+                                    }
+                                    if (month < 10) {
+                                        month = '0' + month;
+                                    }
+
+                                    console.log(month + "/" + dt + "/" + year);
+                                    datediv = document.createElement("P");
+                                    datediv.style.fontSize = "14px";
+                                    datediv.style.marginTop = "-12px";
+                                    datediv.innerHTML = "<b>Date: </b>" + month + "/" + dt + "/" + year;
+                                    mainDiv.appendChild(datediv);
+                                    
+                                    var desc = cardJson[i].description;
+                                    descdiv = document.createElement("P");
+                                    descdiv.style.fontSize = "14px";
+                                    descdiv.style.marginTop = "-12px";
+                                    descdiv.style.marginBottom = "5px";
+                                    desctext = document.createTextNode(desc);
+                                    descdiv.appendChild(desctext);
+                                    mainDiv.appendChild(descdiv);
+
+                                    linkdiv = document.createElement("A");
+                                    linkdiv.style.marginBottom = "10px";
+                                    linkdiv.style.fontSize = "14px";
+                                    linktext = document.createTextNode("See Original Post");
+                                    linkdiv.setAttribute("href", cardJson[i].url);
+                                    linkdiv.appendChild(linktext);
+                                    linkdiv.setAttribute("target", "_blank");
+                                    mainDiv.appendChild(linkdiv);
+
+                                    crossdiv = document.createElement("div");
+                                    crossp = document.createElement("p");
+                                    crossp.style.fontSize = "27px";
+                                    crossp.style.marginTop = "12px";
+                                    crossp.style.marginRight = "3px";
+                                    crossp.innerHTML = "&times;";
+                                    crossdiv.appendChild(crossp);
+
+                                    carddiv1.addEventListener("click", expandCard1);
+                                    textdiv2.appendChild(mainDiv);
+                                    textdiv2.appendChild(crossdiv);
+                                    console.log(textdiv2);
+                                    carddiv1.appendChild(textdiv2);
+                                    initialcarddisplay.appendChild(carddiv1);
+                                }
+                                carddisplay.appendChild(initialcarddisplay);
+                            }//else
+                        }
+                    }
+                }
+
+            }
+            //resetForm();
+        }//displaycards
+
+        function showbuttonMouseOver() {
+            this.style.backgroundColor = "green";
+            this.style.color = "white";
+        }
+        function showbuttonMouseOut() {
+            this.style.backgroundColor = "#E8E8E8";
+            this.style.color = "black";
+        }
+        function cardMouseOut() {
+            console.log("mouse out");
+            this.style.boxShadow = "none";
+        }
+        function cardMouseOver() {
+            console.log("mouse over");
+            this.style.boxShadow = "0px 10px 35px 0px " + "rgba(" + 0 + "," + 0 + "," + 0 + ",0.7)";
+        }
+
+        function reset1() {
+            newDiv = document.getElementById("form-div");
+            var date = new Date();
+            var day = date.getDate();
+            var month = date.getMonth() + 1;
+            var year = date.getFullYear();
+            var today = month + "/" + day + "/" + year;
+            newDiv.getElementsByTagName("input")[2].valueAsDate = new Date(today);
+
+            var todate = new Date(newDiv.getElementsByTagName("input")[2].valueAsDate);
+            var milsec = todate.getTime();
+            console.log(milsec);
+            milsec = date - 604800000;
+            
+            var fromdate = new Date(milsec);
+            console.log(fromdate);
+            newDiv.getElementsByTagName("input")[1].valueAsDate = new Date(milsec);
+
+            newDiv.getElementsByTagName("input")[0].value = "";
+            console.log("before gng to category");
+            selcategory = document.getElementById("category");
+            selcategory.value = "all";
+            getSources();
+            document.getElementById("carddisplay").style.display = "none";
+            console.log(document.getElementById("no_result"));
+            //document.getElementById("no_result").style.display = "none";
+            if (document.getElementById("no_result").style.display == "block")
+            {
+                console.log("hey");
+                document.getElementById("no_result").style.display = "none";
+            }
+                
+        }
+
+    </script>
+</body>
+</html>
